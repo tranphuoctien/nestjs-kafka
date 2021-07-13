@@ -1,5 +1,5 @@
 {
-  "name": "@tranphuoctien/nestjs-kafka",
+  "name": "nestjs-kafka",
   "version": "1.4.1",
   "description": "KafkaJS integration with NestJS",
   "main": "dist/index.js",
