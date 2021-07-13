@@ -8,6 +8,7 @@ import {
   SeekEntry,
   TopicPartitionOffsetAndMetadata,
   Offsets,
+  CompressionTypes, CompressionCodecs
 } from 'kafkajs';
 import { Deserializer, Serializer } from "@nestjs/microservices";
 import { Logger } from "@nestjs/common/services/logger.service";
@@ -20,7 +21,8 @@ import {
   SUBSCRIBER_MAP,
   SUBSCRIBER_OBJECT_MAP
 } from './kafka.decorator';
-
+import SnappyCodec from 'kafkajs-snappy';
+CompressionCodecs[CompressionTypes.Snappy] = SnappyCodec;
 @Injectable()
 export class KafkaService implements OnModuleInit, OnModuleDestroy {
 
@@ -34,13 +36,13 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
   private options: KafkaModuleOption['options'];
 
   protected topicOffsets: Map<string, (SeekEntry & { high: string; low: string })[]> = new Map();
-  
+
   protected logger = new Logger(KafkaService.name);
 
   constructor(
     options: KafkaModuleOption['options']
   ) {
-    const { 
+    const {
       client,
       consumer: consumerConfig,
       producer: producerConfig,
@@ -58,7 +60,7 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
       },
       consumerConfig
     );
-    
+
     this.autoConnect = options.autoConnect ?? true;
     this.consumer = this.kafka.consumer(consumerOptions);
     this.producer = this.kafka.producer(producerConfig);
@@ -122,8 +124,8 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
 
   /**
    * Subscribes to the topics.
-   * 
-   * @param topic 
+   *
+   * @param topic
    */
   private async subscribe(topic: string): Promise<void> {
     await this.consumer.subscribe({
@@ -131,11 +133,11 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
       fromBeginning: this.options.consumeFromBeginning || false
     });
   }
-  
+
   /**
    * Send/produce a message to a topic.
-   * 
-   * @param message 
+   *
+   * @param message
    */
   async send(message: KafkaMessageSend): Promise<RecordMetadata[]> {
     if (!this.producer) {
@@ -145,15 +147,15 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
 
     const serializedPacket = await this.serializer.serialize(message);
 
-    // @todo - rather than have a producerRecord, 
+    // @todo - rather than have a producerRecord,
     // most of this can be done when we create the controller.
     return await this.producer.send(serializedPacket);
   }
 
   /**
    * Gets the groupId suffix for the consumer.
-   * 
-   * @param groupId 
+   *
+   * @param groupId
    */
   public getGroupIdSuffix(groupId: string): string {
     return groupId + '-client';
@@ -161,10 +163,10 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
 
   /**
    * Calls the method you are subscribed to.
-   * 
+   *
    * @param topic
    *  The topic to subscribe to.
-   * @param instance 
+   * @param instance
    *  The class instance.
    */
   subscribeToResponseOf<T>(topic: string, instance: T): void {
@@ -217,8 +219,8 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
 
   /**
    * Sets up the serializer to encode outgoing messages.
-   * 
-   * @param options 
+   *
+   * @param options
    */
   protected initializeSerializer(options: KafkaModuleOption['options']): void {
     this.serializer = (options && options.serializer) || new KafkaRequestSerializer();
@@ -226,8 +228,8 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
 
   /**
    * Sets up the deserializer to decode incoming messages.
-   * 
-   * @param options 
+   *
+   * @param options
    */
   protected initializeDeserializer(options: KafkaModuleOption['options']): void {
     this.deserializer = (options && options.deserializer) || new KafkaResponseDeserializer();

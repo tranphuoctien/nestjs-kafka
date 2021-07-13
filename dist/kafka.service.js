@@ -25,6 +25,8 @@ const kafka_logger_1 = require("@nestjs/microservices/helpers/kafka-logger");
 const kafka_response_deserializer_1 = require("./deserializer/kafka-response.deserializer");
 const kafka_request_serializer_1 = require("./serializer/kafka-request.serializer");
 const kafka_decorator_1 = require("./kafka.decorator");
+const kafkajs_snappy_1 = require("kafkajs-snappy");
+kafkajs_1.CompressionCodecs[kafkajs_1.CompressionTypes.Snappy] = kafkajs_snappy_1.default;
 let KafkaService = KafkaService_1 = class KafkaService {
     constructor(options) {
         var _a;
