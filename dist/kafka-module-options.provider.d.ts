@@ -10,7 +10,7 @@ export declare class KafkaModuleOptionsProvider {
         deserializer?: import("@nestjs/microservices").Deserializer<any, any>;
         serializer?: import("@nestjs/microservices").Serializer<any, any>;
         consumeFromBeginning?: boolean;
-        seek?: Record<string, number | "earliest" | Date>;
+        seek?: Record<string, number | Date | "earliest">;
         autoConnect?: boolean;
     };
 }
